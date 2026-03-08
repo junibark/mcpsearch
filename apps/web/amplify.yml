@@ -4,20 +4,17 @@ applications:
       phases:
         preBuild:
           commands:
-            # appRoot is apps/web, so go to monorepo root
             - npm install -g pnpm@9.15.0
             - cd ../.. && pnpm install --frozen-lockfile
         build:
           commands:
-            # Build shared package first
             - cd ../.. && pnpm --filter @mcpsearch/shared build
-            # Build web app
             - cd ../.. && pnpm --filter @mcpsearch/web build
-            # Copy static files to standalone directory
-            - mkdir -p .next/standalone/apps/web/public
-            - cp -r public/* .next/standalone/apps/web/public/ 2>/dev/null || true
-            - mkdir -p .next/standalone/apps/web/.next/static
-            - cp -r .next/static/* .next/standalone/apps/web/.next/static/
+        postBuild:
+          commands:
+            # Copy static assets to standalone output
+            - cp -r public .next/standalone/apps/web/ 2>/dev/null || true
+            - cp -r .next/static .next/standalone/apps/web/.next/
       artifacts:
         baseDirectory: .next/standalone
         files:
