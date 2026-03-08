@@ -9,13 +9,20 @@ applications:
         build:
           commands:
             - cd ../.. && pnpm --filter @mcpsearch/shared build
-            # Build and copy static assets in one command to preserve directory context
+            # Build web app
+            - cd ../.. && pnpm --filter @mcpsearch/web build
+            # Find and copy static assets using absolute paths
             - |
-              cd ../.. && \
-              pnpm --filter @mcpsearch/web build && \
-              cd apps/web && \
-              cp -r .next/static .next/standalone/apps/web/.next/ && \
-              cp -r public .next/standalone/apps/web/ 2>/dev/null || mkdir -p .next/standalone/apps/web/public
+              WEB_DIR=$(pwd)
+              echo "Current dir: $WEB_DIR"
+              ls -la "$WEB_DIR/.next/" || echo "No .next in current dir"
+              MONO_ROOT=$(cd ../.. && pwd)
+              echo "Mono root: $MONO_ROOT"
+              ls -la "$MONO_ROOT/apps/web/.next/" || echo "Checking monorepo path"
+              if [ -d "$MONO_ROOT/apps/web/.next/standalone" ]; then
+                cp -r "$MONO_ROOT/apps/web/.next/static" "$MONO_ROOT/apps/web/.next/standalone/apps/web/.next/"
+                cp -r "$MONO_ROOT/apps/web/public" "$MONO_ROOT/apps/web/.next/standalone/apps/web/" 2>/dev/null || mkdir -p "$MONO_ROOT/apps/web/.next/standalone/apps/web/public"
+              fi
       artifacts:
         baseDirectory: .next/standalone
         files:
