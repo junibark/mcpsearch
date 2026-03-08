@@ -5,18 +5,21 @@ applications:
         preBuild:
           commands:
             - npm install -g pnpm@9.15.0
-            # Source is in $CODEBUILD_SRC_DIR/mcpsearch
             - cd $CODEBUILD_SRC_DIR/mcpsearch && pnpm install --frozen-lockfile
         build:
           commands:
             - cd $CODEBUILD_SRC_DIR/mcpsearch && pnpm --filter @mcpsearch/shared build
             - cd $CODEBUILD_SRC_DIR/mcpsearch && pnpm --filter @mcpsearch/web build
-            # Copy static assets
+            # Copy static assets and required files for Amplify SSR
             - |
               cd $CODEBUILD_SRC_DIR/mcpsearch/apps/web
+              # Copy static files
               cp -r .next/static .next/standalone/apps/web/.next/
               cp -r public .next/standalone/apps/web/ 2>/dev/null || mkdir -p .next/standalone/apps/web/public
-              echo "Static files copied successfully"
+              # Copy required-server-files.json to standalone root
+              cp .next/required-server-files.json .next/standalone/
+              echo "Build artifacts ready"
+              ls -la .next/standalone/
       artifacts:
         baseDirectory: .next/standalone
         files:
