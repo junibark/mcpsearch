@@ -13,8 +13,11 @@ applications:
             - cd ../..
             - pnpm --filter @mcpsearch/shared build
             - pnpm --filter @mcpsearch/web build
+            # Copy static files to standalone directory
+            - cp -r apps/web/public apps/web/.next/standalone/apps/web/public
+            - cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static
       artifacts:
-        baseDirectory: .next
+        baseDirectory: .next/standalone
         files:
           - '**/*'
       cache:
@@ -22,4 +25,5 @@ applications:
           - ../../node_modules/**/*
           - ../../apps/web/node_modules/**/*
           - ../../packages/shared/node_modules/**/*
+          - ../../apps/web/.next/cache/**/*
     appRoot: apps/web
