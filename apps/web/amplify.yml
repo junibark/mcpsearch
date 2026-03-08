@@ -10,16 +10,26 @@ applications:
           commands:
             - cd $CODEBUILD_SRC_DIR/mcpsearch && pnpm --filter @mcpsearch/shared build
             - cd $CODEBUILD_SRC_DIR/mcpsearch && pnpm --filter @mcpsearch/web build
-            # Copy static assets and required files for Amplify SSR
+            # Flatten monorepo standalone structure for Amplify SSR
             - |
               cd $CODEBUILD_SRC_DIR/mcpsearch/apps/web
-              # Copy static files
-              cp -r .next/static .next/standalone/apps/web/.next/
-              cp -r public .next/standalone/apps/web/ 2>/dev/null || mkdir -p .next/standalone/apps/web/public
-              # Copy required-server-files.json to standalone root
-              cp .next/required-server-files.json .next/standalone/
-              echo "Build artifacts ready"
+              echo "=== Standalone structure before flatten ==="
               ls -la .next/standalone/
+              ls -la .next/standalone/apps/web/ || true
+
+              # Move app files from nested path to standalone root
+              mv .next/standalone/apps/web/* .next/standalone/
+              rm -rf .next/standalone/apps
+
+              # Copy static files to the .next directory
+              cp -r .next/static .next/standalone/.next/
+
+              # Copy public folder
+              cp -r public .next/standalone/ 2>/dev/null || mkdir -p .next/standalone/public
+
+              echo "=== Standalone structure after flatten ==="
+              ls -la .next/standalone/
+              ls -la .next/standalone/.next/ || true
       artifacts:
         baseDirectory: .next/standalone
         files:
