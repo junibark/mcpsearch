@@ -10,11 +10,11 @@ applications:
           commands:
             - cd ../.. && pnpm --filter @mcpsearch/shared build
             - cd ../.. && pnpm --filter @mcpsearch/web build
-        postBuild:
-          commands:
-            # Copy static assets to standalone output
-            - cp -r public .next/standalone/apps/web/ 2>/dev/null || true
+            # Copy static assets immediately after build (same shell context)
+            - ls -la .next/
+            - ls -la .next/standalone/apps/web/
             - cp -r .next/static .next/standalone/apps/web/.next/
+            - cp -r public .next/standalone/apps/web/ 2>/dev/null || mkdir -p .next/standalone/apps/web/public
       artifacts:
         baseDirectory: .next/standalone
         files:
