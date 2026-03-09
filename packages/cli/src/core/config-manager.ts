@@ -15,7 +15,7 @@ interface CLIConfig {
 }
 
 const defaults: CLIConfig = {
-  registry: process.env['MCP_REGISTRY_URL'] || 'https://2bxybmyptk.us-east-1.awsapprunner.com',
+  registry: process.env['MCP_REGISTRY_URL'] || 'https://api.mcpsearch.com',
   telemetryEnabled: true,
 };
 
