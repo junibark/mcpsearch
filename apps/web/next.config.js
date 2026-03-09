@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
+const path = require('path');
+
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
+  // Required for monorepo standalone builds
+  outputFileTracingRoot: path.join(__dirname, '../../'),
   transpilePackages: ['@mcpsearch/shared'],
 
   // Image optimization

@@ -1,52 +1,22 @@
 version: 1
 applications:
-  - frontend:
+  - appRoot: apps/web
+    frontend:
+      buildPath: /
       phases:
         preBuild:
           commands:
-            - npm install -g pnpm@9.15.0
-            - cd $CODEBUILD_SRC_DIR/mcpsearch && pnpm install --frozen-lockfile
+            - npm install -g pnpm
+            - pnpm install --frozen-lockfile
         build:
           commands:
-            - cd $CODEBUILD_SRC_DIR/mcpsearch && pnpm --filter @mcpsearch/shared build
-            - cd $CODEBUILD_SRC_DIR/mcpsearch && pnpm --filter @mcpsearch/web build
-            # Prepare standalone output for Amplify
-            - |
-              cd $CODEBUILD_SRC_DIR/mcpsearch/apps/web
-              mkdir -p deploy
-
-              # Copy server.js
-              cp .next/standalone/apps/web/server.js deploy/
-
-              # Copy .next folder from standalone (server-side code)
-              cp -r .next/standalone/apps/web/.next deploy/
-
-              # Add static assets
-              cp -r .next/static deploy/.next/
-
-              # Copy public folder
-              cp -r public deploy/ 2>/dev/null || mkdir -p deploy/public
-
-              # Copy node_modules (shared + app-specific)
-              cp -r .next/standalone/node_modules deploy/
-              cp -r .next/standalone/apps/web/node_modules/* deploy/node_modules/ 2>/dev/null || true
-
-              # Copy package.json
-              cp .next/standalone/apps/web/package.json deploy/
-
-              # Copy required-server-files.json (must be at root for Amplify)
-              cp .next/required-server-files.json deploy/
-
-              echo "=== Deploy directory ==="
-              ls -la deploy/
-              echo "=== .next contents ==="
-              ls -la deploy/.next/ | head -15
+            - pnpm --filter @mcpsearch/shared build
+            - pnpm --filter @mcpsearch/web build
       artifacts:
-        baseDirectory: deploy
+        baseDirectory: apps/web/.next
         files:
           - '**/*'
       cache:
         paths:
           - node_modules/**/*
-          - .next/cache/**/*
-    appRoot: apps/web
+          - apps/web/.next/cache/**/*
