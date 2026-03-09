@@ -27,6 +27,9 @@ applications:
               # Copy public folder
               cp -r public .next/standalone/ 2>/dev/null || mkdir -p .next/standalone/public
 
+              # Copy required-server-files.json (required by Amplify SSR)
+              cp .next/required-server-files.json .next/standalone/
+
               echo "=== Standalone structure after flatten ==="
               ls -la .next/standalone/
               ls -la .next/standalone/.next/ || true
