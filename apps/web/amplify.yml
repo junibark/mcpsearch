@@ -23,6 +23,9 @@ applications:
               # Copy public folder
               cp -r public .next/standalone/apps/web/ 2>/dev/null || mkdir -p .next/standalone/apps/web/public
 
+              # Copy required-server-files.json to root (Amplify expects it here)
+              cp .next/required-server-files.json .next/standalone/apps/web/
+
               echo "=== Final structure ==="
               ls -la .next/standalone/apps/web/
               ls -la .next/standalone/apps/web/.next/
