@@ -10,12 +10,60 @@ applications:
           commands:
             - cd $CODEBUILD_SRC_DIR/mcpsearch && pnpm --filter @mcpsearch/shared build
             - cd $CODEBUILD_SRC_DIR/mcpsearch && pnpm --filter @mcpsearch/web build
+            # Prepare standalone output for Amplify monorepo
             - |
               cd $CODEBUILD_SRC_DIR/mcpsearch/apps/web
-              echo "=== Build output ==="
-              ls -la .next/
+
+              # Create the deployment directory structure
+              mkdir -p .amplify-hosting/compute/default
+
+              # Copy server.js (entry point)
+              cp .next/standalone/apps/web/server.js .amplify-hosting/compute/default/
+
+              # Copy .next folder from standalone (contains server-side code)
+              cp -r .next/standalone/apps/web/.next .amplify-hosting/compute/default/
+
+              # Copy static assets into the .next folder
+              cp -r .next/static .amplify-hosting/compute/default/.next/
+
+              # Copy public folder
+              cp -r public .amplify-hosting/compute/default/ 2>/dev/null || mkdir -p .amplify-hosting/compute/default/public
+
+              # Copy node_modules from both locations (shared deps are critical)
+              cp -r .next/standalone/node_modules .amplify-hosting/compute/default/
+              # Also merge in app-specific node_modules
+              cp -r .next/standalone/apps/web/node_modules/* .amplify-hosting/compute/default/node_modules/ 2>/dev/null || true
+
+              # Copy package.json
+              cp .next/standalone/apps/web/package.json .amplify-hosting/compute/default/
+
+              # Copy required-server-files.json
+              cp .next/required-server-files.json .amplify-hosting/compute/default/
+
+              # Create deploy-manifest.json for Amplify SSR
+              cat > .amplify-hosting/deploy-manifest.json << 'MANIFEST'
+              {
+                "version": 1,
+                "framework": { "name": "next", "version": "14.2.29" },
+                "routes": [
+                  { "path": "/_next/static/*", "target": { "kind": "Static" } },
+                  { "path": "/*.*", "target": { "kind": "Static" } },
+                  { "path": "/*", "target": { "kind": "Compute", "src": "default" } }
+                ]
+              }
+              MANIFEST
+
+              # Create static hosting folder and copy static assets
+              mkdir -p .amplify-hosting/static/_next
+              cp -r .next/static .amplify-hosting/static/_next/
+              cp -r public/* .amplify-hosting/static/ 2>/dev/null || true
+
+              echo "=== Deployment structure ==="
+              ls -la .amplify-hosting/
+              ls -la .amplify-hosting/compute/default/
+              ls -la .amplify-hosting/compute/default/.next/ | head -10
       artifacts:
-        baseDirectory: .next
+        baseDirectory: .amplify-hosting
         files:
           - '**/*'
       cache:

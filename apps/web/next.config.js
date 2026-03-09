@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Removed 'standalone' output - let Amplify handle SSR natively
+  output: 'standalone',
   transpilePackages: ['@mcpsearch/shared'],
 
   // Image optimization
