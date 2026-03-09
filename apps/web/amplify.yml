@@ -10,27 +10,12 @@ applications:
           commands:
             - cd $CODEBUILD_SRC_DIR/mcpsearch && pnpm --filter @mcpsearch/shared build
             - cd $CODEBUILD_SRC_DIR/mcpsearch && pnpm --filter @mcpsearch/web build
-            # Prepare standalone output for Amplify
             - |
               cd $CODEBUILD_SRC_DIR/mcpsearch/apps/web
-              echo "=== Standalone output structure ==="
-              ls -la .next/standalone/
-              ls -la .next/standalone/apps/web/ || true
-
-              # Copy static assets to standalone app directory
-              cp -r .next/static .next/standalone/apps/web/.next/
-
-              # Copy public folder
-              cp -r public .next/standalone/apps/web/ 2>/dev/null || mkdir -p .next/standalone/apps/web/public
-
-              # Copy required-server-files.json to root (Amplify expects it here)
-              cp .next/required-server-files.json .next/standalone/apps/web/
-
-              echo "=== Final structure ==="
-              ls -la .next/standalone/apps/web/
-              ls -la .next/standalone/apps/web/.next/
+              echo "=== Build output ==="
+              ls -la .next/
       artifacts:
-        baseDirectory: .next/standalone/apps/web
+        baseDirectory: .next
         files:
           - '**/*'
       cache:
