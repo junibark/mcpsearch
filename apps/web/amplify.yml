@@ -13,16 +13,21 @@ applications:
             # Flatten monorepo standalone structure for Amplify SSR
             - |
               cd $CODEBUILD_SRC_DIR/mcpsearch/apps/web
-              echo "=== Standalone structure before flatten ==="
+              echo "=== Before flatten ==="
               ls -la .next/standalone/
-              ls -la .next/standalone/apps/web/ || true
+              echo "=== Inside apps/web ==="
+              ls -la .next/standalone/apps/web/
+              echo "=== .next server folder ==="
+              ls -la .next/standalone/apps/web/.next/ || true
 
               # Move app files from nested path to standalone root
-              mv .next/standalone/apps/web/* .next/standalone/
+              # Use cp -a to preserve directory structure, then cleanup
+              cp -a .next/standalone/apps/web/. .next/standalone/
               rm -rf .next/standalone/apps
 
-              # Copy static files to the .next directory
-              cp -r .next/static .next/standalone/.next/
+              # Add static files to the .next/static/ directory
+              mkdir -p .next/standalone/.next/static
+              cp -r .next/static/* .next/standalone/.next/static/
 
               # Copy public folder
               cp -r public .next/standalone/ 2>/dev/null || mkdir -p .next/standalone/public
@@ -30,9 +35,12 @@ applications:
               # Copy required-server-files.json (required by Amplify SSR)
               cp .next/required-server-files.json .next/standalone/
 
-              echo "=== Standalone structure after flatten ==="
+              echo "=== After flatten ==="
               ls -la .next/standalone/
-              ls -la .next/standalone/.next/ || true
+              echo "=== .next contents ==="
+              ls -la .next/standalone/.next/
+              echo "=== .next/server contents ==="
+              ls -la .next/standalone/.next/server/ || echo "No server folder"
       artifacts:
         baseDirectory: .next/standalone
         files:
