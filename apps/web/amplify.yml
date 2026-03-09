@@ -10,39 +10,24 @@ applications:
           commands:
             - cd $CODEBUILD_SRC_DIR/mcpsearch && pnpm --filter @mcpsearch/shared build
             - cd $CODEBUILD_SRC_DIR/mcpsearch && pnpm --filter @mcpsearch/web build
-            # Flatten monorepo standalone structure for Amplify SSR
+            # Prepare standalone output for Amplify
             - |
               cd $CODEBUILD_SRC_DIR/mcpsearch/apps/web
-              echo "=== Before flatten ==="
+              echo "=== Standalone output structure ==="
               ls -la .next/standalone/
-              echo "=== Inside apps/web ==="
-              ls -la .next/standalone/apps/web/
-              echo "=== .next server folder ==="
-              ls -la .next/standalone/apps/web/.next/ || true
+              ls -la .next/standalone/apps/web/ || true
 
-              # Move app files from nested path to standalone root
-              # Use cp -a to preserve directory structure, then cleanup
-              cp -a .next/standalone/apps/web/. .next/standalone/
-              rm -rf .next/standalone/apps
-
-              # Add static files to the .next/static/ directory
-              mkdir -p .next/standalone/.next/static
-              cp -r .next/static/* .next/standalone/.next/static/
+              # Copy static assets to standalone app directory
+              cp -r .next/static .next/standalone/apps/web/.next/
 
               # Copy public folder
-              cp -r public .next/standalone/ 2>/dev/null || mkdir -p .next/standalone/public
+              cp -r public .next/standalone/apps/web/ 2>/dev/null || mkdir -p .next/standalone/apps/web/public
 
-              # Copy required-server-files.json (required by Amplify SSR)
-              cp .next/required-server-files.json .next/standalone/
-
-              echo "=== After flatten ==="
-              ls -la .next/standalone/
-              echo "=== .next contents ==="
-              ls -la .next/standalone/.next/
-              echo "=== .next/server contents ==="
-              ls -la .next/standalone/.next/server/ || echo "No server folder"
+              echo "=== Final structure ==="
+              ls -la .next/standalone/apps/web/
+              ls -la .next/standalone/apps/web/.next/
       artifacts:
-        baseDirectory: .next/standalone
+        baseDirectory: .next/standalone/apps/web
         files:
           - '**/*'
       cache:
